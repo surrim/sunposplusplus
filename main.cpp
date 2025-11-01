@@ -1,6 +1,7 @@
 #include <chrono>
 #include <cmath>
 #include <print>
+#include <thread>
 
 using day_duration_t = std::chrono::duration<double, std::ratio<24 * 60 * 60>>;
 
@@ -72,6 +73,12 @@ int main() {
 	// Expected output:
 	std::println("51.340332\t12.374750\t-26.541462\t280.398315");
 	std::println("{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}", xlat * R2D, xlon * R2D, sun_position.solarz * R2D, sun_position.azi * R2D);
+	while (true) {
+		auto date = std::chrono::system_clock::now();
+		auto sun_position = sunpos_ultimate_azi_atan2(date, xlat, xlon);
+		std::println("[{:%T}] {:.6f}\t{:.6f}\t{:.6f}\t{:.6f}", date, xlat * R2D, xlon * R2D, sun_position.solarz * R2D, sun_position.azi * R2D);
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+	}
 
 	return 0;
 }
