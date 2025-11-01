@@ -23,6 +23,7 @@
 				<Compiler>
 					<Add option="-O2" />
 					<Add option="-DNDEBUG" />
+					<Add option="-DSP_FLOATING_POINT_TYPE=double" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />

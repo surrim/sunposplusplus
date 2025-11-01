@@ -1,15 +1,19 @@
 #include "suncalc.h"
 #include <cmath>
 
-using day_duration_t = std::chrono::duration<double, std::ratio<24 * 60 * 60>>;
+using day_duration_t = std::chrono::duration<floating_point_t, std::ratio<24 * 60 * 60>>;
+
+constexpr floating_point_t operator ""_fp(long double d) {
+	return floating_point_t(d);
+}
 
 static constexpr auto J2000 = getDate(2000, 1, 1, std::chrono::hours(12)); // 1 Jan 2000 12:00 UTC
 
-static constexpr double daysSinceJ2000(std::chrono::time_point<std::chrono::system_clock> date) {
+static constexpr floating_point_t daysSinceJ2000(std::chrono::time_point<std::chrono::system_clock> date) {
 	return day_duration_t(date - J2000).count();
 }
 
-static double dayFraction(std::chrono::time_point<std::chrono::system_clock> n) {
+static floating_point_t dayFraction(std::chrono::time_point<std::chrono::system_clock> n) {
 	auto time = std::chrono::system_clock::to_time_t(n);
 	auto tm = std::tm();
 	gmtime_r(&time, &tm);
@@ -17,12 +21,12 @@ static double dayFraction(std::chrono::time_point<std::chrono::system_clock> n) 
 	return day_duration_t(n - ymd).count();
 }
 
-static constexpr double fmodulo2Pi(double x) {
-	return x - std::floor(0.5 * std::numbers::inv_pi * x) * 2 * std::numbers::pi;
+static constexpr floating_point_t fmodulo2Pi(floating_point_t x) {
+	return x - std::floor(0.5_fp * std::numbers::inv_pi_v<floating_point_t> * x) * 2 * std::numbers::pi_v<floating_point_t>;
 }
 
 // See https://en.wikipedia.org/wiki/Position_of_the_Sun#Approximate_position
-sun_position_t sunpos_ultimate_azi_atan2(std::chrono::time_point<std::chrono::system_clock> date, double xlat, double xlon) {
+sun_position_t sunpos_ultimate_azi_atan2(std::chrono::time_point<std::chrono::system_clock> date, floating_point_t xlat, floating_point_t xlon) {
 	// --- Astronomical Almanac for the Year 2019, Page C5 ---
 	auto n = daysSinceJ2000(date);
 	auto L = fmodulo2Pi(280.460_deg + 0.985'647'4_deg * n);
@@ -36,7 +40,7 @@ sun_position_t sunpos_ultimate_azi_atan2(std::chrono::time_point<std::chrono::sy
 
 	// --- Solar geometry ---
 	auto sunlat = delta;
-	auto sunlon = -2 * std::numbers::pi * dayFraction(date) + std::numbers::pi - EoT;
+	auto sunlon = -2 * std::numbers::pi_v<floating_point_t> * dayFraction(date) + std::numbers::pi_v<floating_point_t> - EoT;
 	auto PHIo =   xlat;
 	auto PHIs = sunlat;
 	auto LAMo =   xlon;

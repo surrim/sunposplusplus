@@ -1,12 +1,18 @@
 #pragma once
 
 #include <chrono>
+#include <stdfloat>
 
-static constexpr auto R2D = 180 / std::numbers::pi;
-static constexpr auto D2R = std::numbers::pi / 180;
+#ifndef SP_FLOATING_POINT_TYPE
+#define SP_FLOATING_POINT_TYPE std::float32_t
+#endif
 
-constexpr double operator ""_deg(long double d) {
-	return d * D2R;
+using floating_point_t = SP_FLOATING_POINT_TYPE;
+static constexpr floating_point_t R2D = 180 / std::numbers::pi_v<floating_point_t>;
+static constexpr floating_point_t D2R = std::numbers::pi_v<floating_point_t> / 180;
+
+constexpr floating_point_t operator ""_deg(long double d) {
+	return floating_point_t(d) * D2R;
 }
 
 static constexpr auto getDate(int y, unsigned m, unsigned d, std::chrono::nanoseconds ns = {}) {
@@ -14,7 +20,7 @@ static constexpr auto getDate(int y, unsigned m, unsigned d, std::chrono::nanose
 }
 
 struct sun_position_t {
-	double solarz;
-	double azi;
+	floating_point_t solarz;
+	floating_point_t azi;
 };
-sun_position_t sunpos_ultimate_azi_atan2(std::chrono::time_point<std::chrono::system_clock> date, double xlat, double xlon);
+sun_position_t sunpos_ultimate_azi_atan2(std::chrono::time_point<std::chrono::system_clock> date, floating_point_t xlat, floating_point_t xlon);
