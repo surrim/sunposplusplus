@@ -29,21 +29,22 @@ static constexpr double fmodulo2Pi(double x) {
     return x - std::floor(0.5 * std::numbers::inv_pi * x) * 2 * std::numbers::pi;
 }
 
-constexpr long double operator ""_deg(long double d) {
+constexpr double operator ""_deg(long double d) {
     return d * D2R;
 }
 
+// See https://en.wikipedia.org/wiki/Position_of_the_Sun#Approximate_position
 struct sun_position_t { double solarz; double azi; };
 sun_position_t sunpos_ultimate_azi_atan2(std::chrono::time_point<std::chrono::system_clock> date, double xlat, double xlon) {
     // --- Astronomical Almanac for the Year 2019, Page C5 ---
     auto n = daysSinceJ2000(date);
-    auto L = fmodulo2Pi(280.460_deg + 0.9856474_deg * n);
-    auto g = fmodulo2Pi(357.528_deg + 0.9856003_deg * n);
+    auto L = fmodulo2Pi(280.460_deg + 0.985'647'4_deg * n);
+    auto g = fmodulo2Pi(357.528_deg + 0.985'600'3_deg * n);
     auto lambda = fmodulo2Pi(L + 1.915_deg * std::sin(g) + 0.020_deg * std::sin(2 * g));
-    auto epsilon = 23.439_deg - 0.0000004_deg * n;
-    auto alpha = fmodulo2Pi(std::atan2(std::cos(epsilon) * std::sin(lambda), std::cos(lambda)));
-    auto delta = asinf(std::sin(epsilon) * std::sin(lambda));
-    //auto R = 1.00014 - 0.01671 * std::cos(g) - 0.00014 * std::cos(2 * g);
+    auto epsilon = 23.439_deg - 0.000'000'4_deg * n; // 23.43916666666666666666
+    auto alpha = std::atan2(std::cos(epsilon) * std::sin(lambda), std::cos(lambda));
+    auto delta = std::asin(std::sin(epsilon) * std::sin(lambda));
+    //auto R = 1.000'14 - 0.016'71 * std::cos(g) - 0.000'14 * std::cos(2 * g);
     auto EoT = fmodulo2Pi(L - alpha);
 
     // --- Solar geometry ---
@@ -58,7 +59,7 @@ sun_position_t sunpos_ultimate_azi_atan2(std::chrono::time_point<std::chrono::sy
     auto Sz = std::sin(PHIo) * std::sin(PHIs) + std::cos(PHIo) * std::cos(PHIs) * std::cos(LAMS - LAMo);
 
     return {
-        .solarz = asinf(Sz),
+        .solarz = std::asin(Sz),
         .azi = fmodulo2Pi(std::atan2(Sx, Sy))
     };
 }
