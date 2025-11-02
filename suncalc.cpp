@@ -1,34 +1,44 @@
 #include "suncalc.h"
-#include <cmath>
 
-using day_duration_t = std::chrono::duration<sc::floating_point_t, std::ratio<24 * 60 * 60>>;
+#include <cmath>
 
 constexpr sc::floating_point_t operator ""_fp(long double d) {
 	return sc::floating_point_t(d);
 }
 
-static constexpr auto J2000 = sc::get_date(2000, 1, 1, std::chrono::hours(12)); // 1 Jan 2000 12:00 UTC
+static auto J2000 = sc::get_date(2000, 1, 1, 12); // 1 Jan 2000 12:00 UTC
 
-static constexpr sc::floating_point_t days_since_j000(std::chrono::time_point<std::chrono::system_clock> date) {
-	return day_duration_t(date - J2000).count();
+static constexpr sc::floating_point_t days_since_j2000(std::time_t date) {
+	return (date - J2000) * (1 / sc::floating_point_t(24 * 60 * 60));
 }
 
-static sc::floating_point_t day_fraction(std::chrono::time_point<std::chrono::system_clock> n) {
-	auto time = std::chrono::system_clock::to_time_t(n);
+static sc::floating_point_t day_fraction(std::time_t time) {
 	auto tm = std::tm();
 	gmtime_r(&time, &tm);
-	auto ymd = sc::get_date(1900 + tm.tm_year, 1 + tm.tm_mon, tm.tm_mday);
-	return day_duration_t(n - ymd).count();
+	auto ymd = sc::get_date(tm.tm_year + 1900 , tm.tm_mon + 1, tm.tm_mday);
+	return (time - ymd) * (1 / sc::floating_point_t(24 * 60 * 60));
 }
 
 static constexpr sc::floating_point_t fmodulo_rad(sc::floating_point_t x) {
 	return x - std::floor(0.5_fp * std::numbers::inv_pi_v<sc::floating_point_t> * x) * 2 * std::numbers::pi_v<sc::floating_point_t>;
 }
 
+std::time_t sc::get_date(int y, int m, int d, int hh, int mm, int ss) {
+	auto tm = std::tm{
+		.tm_sec  = ss,
+		.tm_min  = mm,
+		.tm_hour = hh,
+		.tm_mday = d,
+		.tm_mon  = m - 1,
+		.tm_year = y - 1900
+	};
+	return timegm(&tm);
+}
+
 // See https://en.wikipedia.org/wiki/Position_of_the_Sun#Approximate_position
-sc::sun_position_t sc::compute_sun_position(std::chrono::time_point<std::chrono::system_clock> date, sc::floating_point_t xlat, sc::floating_point_t xlon) {
+sc::sun_position_t sc::compute_sun_position(std::time_t date, sc::floating_point_t xlat, sc::floating_point_t xlon) {
 	// --- Astronomical Almanac for the Year 2019, Page C5 ---
-	auto n = days_since_j000(date);
+	auto n = days_since_j2000(date);
 	auto L = fmodulo_rad(280.460_deg + 0.985'647'4_deg * n);
 	auto g = fmodulo_rad(357.528_deg + 0.985'600'3_deg * n);
 	auto lambda = fmodulo_rad(L + 1.915_deg * std::sin(g) + 0.020_deg * std::sin(2 * g));

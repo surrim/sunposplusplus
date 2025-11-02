@@ -1,6 +1,7 @@
 #pragma once
 
-#include <chrono>
+#include <ctime>
+#include <numbers>
 #include <stdfloat>
 
 #ifndef SP_FLOATING_POINT_TYPE
@@ -16,13 +17,11 @@ namespace sc {
 		return floating_point_t(d) * D2R;
 	}
 
-	static constexpr auto get_date(int y, unsigned m, unsigned d, std::chrono::nanoseconds ns = {}) {
-		return std::chrono::sys_days(std::chrono::year(y) / std::chrono::month(m) / std::chrono::day(d)) + ns;
-	}
+	std::time_t get_date(int y, int m, int d, int hh = 0, int mm = 0, int ss = 0);
 
 	struct sun_position_t {
 		floating_point_t solarz;
 		floating_point_t azi;
 	};
-	sun_position_t compute_sun_position(std::chrono::time_point<std::chrono::system_clock> date, floating_point_t xlat, floating_point_t xlon);
+	sun_position_t compute_sun_position(std::time_t date, floating_point_t xlat, floating_point_t xlon);
 }

@@ -2,12 +2,12 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="suncalc2" />
+		<Option title="suncalc++" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
-				<Option output="bin/debug/suncalc2" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/debug/suncalc" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -16,7 +16,7 @@
 				</Compiler>
 			</Target>
 			<Target title="Release">
-				<Option output="bin/release/suncalc2" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/release/suncalc" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
