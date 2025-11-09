@@ -1,28 +1,65 @@
 #include "suncalc.h"
 #include <chrono>
+#include <expected>
 #include <print>
 #include <thread>
+#include <argparse/argparse.hpp>
+
+static constexpr auto DATE_FORMAT = "%Y-%m-%d %H:%M:%S";
 
 static std::chrono::sys_seconds to_time_point(std::time_t date) {
-    using namespace std::chrono;
-    return round<seconds>(system_clock::time_point(seconds(date)));
+	using namespace std::chrono;
+	return round<seconds>(system_clock::time_point(seconds(date)));
 }
 
-int main() {
-	using namespace sc;
+static std::expected<std::time_t, nullptr_t> read_date(std::string_view date_string, std::string_view date_format) {
+	auto tm = std::tm();
+	if (!strptime(date_string.data(), date_format.data(), &tm)) {
+		return std::unexpected(nullptr);
+	}
+#ifndef _WIN32
+	return timegm(&tm);
+#else
+	return _mkgmtime(&tm);
+#endif
+}
 
-	auto xlat = 51.340333_deg, xlon = 12.37475_deg;
-	auto date = get_date(2025, 10, 31, 18, 33);
-	//auto date = std::time(nullptr);
-	auto sun_position = compute_sun_position(date, xlat, xlon);
-	// Expected output:
-	std::println("51.340332\t12.374750\t-26.541462\t280.398315");
-	std::println("{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}", xlat * R2D, xlon * R2D, sun_position.solarz * R2D, sun_position.azi * R2D);
-	while (true) {
-		auto date = std::time(nullptr);
-		auto sun_position = compute_sun_position(date, xlat, xlon);
-		std::println("[{:%T}] {:.6f}\t{:.6f}\t{:.6f}\t{:.6f}", to_time_point(date), xlat * R2D, xlon * R2D, sun_position.solarz * R2D, sun_position.azi * R2D);
-		std::this_thread::sleep_for(std::chrono::seconds(1));
+void print_sun_position(std::time_t date, double latitude_degrees, double longitude_degrees) {
+	const auto latitude  = sc::floating_point_t(latitude_degrees  * sc::D2R);
+	const auto longitude = sc::floating_point_t(longitude_degrees * sc::D2R);
+	const auto sun_position = sc::compute_sun_position(date, latitude, longitude);
+	std::println("{:%Y-%m-%d %T}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}", to_time_point(date), latitude_degrees, longitude_degrees, sun_position.solarz * sc::R2D, sun_position.azi * sc::R2D);
+}
+
+int main(int argc, char *argv[]) {
+	argparse::ArgumentParser program("suncalc");
+	program.add_description("Calculate the position of the sun");
+	auto latitude_degrees  = 0.0;
+	auto longitude_degrees = 0.0;
+	auto date_string = std::string();
+	auto track = false;
+	program.add_argument("latitude").help("our latitude").store_into(latitude_degrees);
+	program.add_argument("longitude").help("our longitude").store_into(longitude_degrees);
+	program.add_argument("-d", "--date").help("specify the UTC date as \"YYYY-MM-DD HH:MM:SS\"").metavar("DATE").store_into(date_string);
+	program.add_argument("-t", "--track").help("track the current time").flag().store_into(track);
+
+	try {
+		program.parse_args(argc, argv);
+	} catch (const std::exception& err) {
+		std::println(std::cerr, "{}", err.what());
+		std::println(std::cerr, "{}", program.help().str());
+		return 1;
+	}
+
+	if (track) {
+		while (true) {
+			const auto date = std::time(nullptr);
+			print_sun_position(date, latitude_degrees, longitude_degrees);
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+		}
+	} else {
+		const auto date = read_date(date_string, DATE_FORMAT).value_or(std::time(nullptr));
+		print_sun_position(date, latitude_degrees, longitude_degrees);
 	}
 
 	return 0;
