@@ -17,11 +17,11 @@ namespace sc {
 		return floating_point_t(d) * D2R;
 	}
 
-	std::time_t get_date(int y, int m, int d, int hh = 0, int mm = 0, int ss = 0);
+	[[nodiscard]] std::time_t get_date(int y, int m, int d, int hh = 0, int mm = 0, int ss = 0);
 
 	struct sun_position_t {
 		floating_point_t solarz;
 		floating_point_t azi;
 	};
-	sun_position_t compute_sun_position(std::time_t date, floating_point_t xlat, floating_point_t xlon);
+	[[nodiscard]] sun_position_t compute_sun_position(std::time_t date, floating_point_t xlat, floating_point_t xlon);
 }
