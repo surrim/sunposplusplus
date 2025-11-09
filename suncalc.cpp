@@ -32,7 +32,11 @@ std::time_t sc::get_date(int y, int m, int d, int hh, int mm, int ss) {
 		.tm_mon  = m - 1,
 		.tm_year = y - 1900
 	};
+#ifndef _WIN32
 	return timegm(&tm);
+#else
+	return _mkgmtime(&tm);
+#endif
 }
 
 // See https://en.wikipedia.org/wiki/Position_of_the_Sun#Approximate_position
