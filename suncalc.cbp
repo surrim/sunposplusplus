@@ -11,17 +11,27 @@
 				<Option object_output="obj/debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option parameters="51.340333 12.374750" />
+				<Option projectLinkerOptionsRelation="2" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-fsanitize=address" />
+					<Add option="-fsanitize=leak" />
+					<Add option="-fsanitize=undefined" />
 				</Compiler>
+				<Linker>
+					<Add option="-lasan" />
+					<Add option="-lubsan" />
+				</Linker>
 			</Target>
 			<Target title="Release">
 				<Option output="bin/release/suncalc" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option projectLinkerOptionsRelation="2" />
 				<Compiler>
-					<Add option="-O2" />
+					<Add option="-O3" />
 					<Add option="-DNDEBUG" />
 					<Add option="-DSP_FLOATING_POINT_TYPE=double" />
 				</Compiler>
