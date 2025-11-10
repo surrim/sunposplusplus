@@ -26,7 +26,7 @@ constexpr sc::floating_point_t operator ""_fp(long double d) {
 
 static auto J2000 = sc::get_date(2000, 1, 1, 12); // 1 Jan 2000 12:00 UTC
 
-static constexpr sc::floating_point_t days_since_j2000(std::time_t date) {
+static sc::floating_point_t days_since_j2000(std::time_t date) {
 	return (date - J2000) * (1 / sc::floating_point_t(24 * 60 * 60));
 }
 
