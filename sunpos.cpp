@@ -1,4 +1,4 @@
-#include "suncalc.h"
+#include "sunpos.h"
 
 #include <cmath>
 

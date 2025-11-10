@@ -1,4 +1,4 @@
-#include "suncalc.h"
+#include "sunpos.h"
 #include <chrono>
 #include <expected>
 #include <print>
@@ -32,7 +32,7 @@ void print_sun_position(std::time_t date, double latitude_degrees, double longit
 }
 
 int main(int argc, char *argv[]) {
-	argparse::ArgumentParser program("suncalc");
+	argparse::ArgumentParser program("sunpos");
 	program.add_description("Calculate the position of the sun");
 	auto latitude_degrees  = 0.0;
 	auto longitude_degrees = 0.0;
