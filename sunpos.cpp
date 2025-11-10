@@ -58,6 +58,7 @@ std::time_t sc::get_date(int y, int m, int d, int hh, int mm, int ss) {
 }
 
 // See https://en.wikipedia.org/wiki/Position_of_the_Sun#Approximate_position
+// and https://www.sciencedirect.com/science/article/pii/S0960148121004031
 sc::sun_position_t sc::compute_sun_position(std::time_t date, sc::floating_point_t xlat, sc::floating_point_t xlon) {
 	// --- Astronomical Almanac for the Year 2019, Page C5 ---
 	auto n = days_since_j2000(date);
