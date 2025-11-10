@@ -18,6 +18,23 @@ This project provides a compact, self-contained implementation of azimuth comput
 
 ```bash
 g++ -std=c++23 *.cpp -o sunpos
+
+./sunpos --help
+# output:
+# Usage: sunpos [--help] [--version] [--date DATE] [--track] latitude longitude
+#
+# Calculate the position of the sun
+#
+# Positional arguments:
+#   latitude         our latitude
+#   longitude        our longitude
+#
+# Optional arguments:
+#   -h, --help       shows help message and exits
+#   -v, --version    prints version information and exits
+#   -d, --date DATE  specify the UTC date as "YYYY-MM-DD HH:MM:SS"
+#   -t, --track      track the current time
+
 ./sunpos 51.340333 12.374750 -d "2025-10-31 18:33:00"
 # output:
 # 2025-10-31 18:33:00	51.340333	12.374750	-26.541346	280.398407
