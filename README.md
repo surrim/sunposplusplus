@@ -17,7 +17,7 @@ This project provides a compact, self-contained implementation of azimuth comput
 ## Build & Run
 
 ```bash
-g++ -std=c++23 *.cpp -o sunpos
+g++ -std=c++23 -O3 *.cpp -o sunpos
 
 ./sunpos --help
 # output:
