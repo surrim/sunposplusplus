@@ -1,4 +1,4 @@
-/* Copyright 2025 surrim
+/* Copyright 2026 surrim
  *
  * This file is part of sunpos++.
  *
