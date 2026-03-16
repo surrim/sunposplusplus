@@ -30,6 +30,8 @@ namespace sc {
 	using floating_point_t = SP_FLOATING_POINT_TYPE;
 	static constexpr floating_point_t R2D = 180 / std::numbers::pi_v<floating_point_t>;
 	static constexpr floating_point_t D2R = std::numbers::pi_v<floating_point_t> / 180;
+	static constexpr floating_point_t R2B = 128 / std::numbers::pi_v<floating_point_t>;
+	static constexpr floating_point_t B2R = std::numbers::pi_v<floating_point_t> / 128;
 
 	constexpr floating_point_t operator ""_deg(long double d) {
 		return floating_point_t(d) * D2R;
