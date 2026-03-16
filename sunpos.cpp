@@ -83,7 +83,7 @@ sc::sun_position_t sc::compute_sun_position(std::time_t date, sc::floating_point
 	auto Sz = std::sin(PHIo) * std::sin(PHIs) + std::cos(PHIo) * std::cos(PHIs) * std::cos(LAMS - LAMo);
 
 	return {
-		.solarz = std::asin(Sz),
-		.azi = fmodulo_rad(std::atan2(Sx, Sy))
+		.zenithAngle = std::asin(Sz),
+		.azimuthAngle = fmodulo_rad(std::atan2(Sx, Sy))
 	};
 }

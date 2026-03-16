@@ -46,7 +46,7 @@ void print_sun_position(std::time_t date, double latitude_degrees, double longit
 	const auto latitude  = sc::floating_point_t(latitude_degrees  * sc::D2R);
 	const auto longitude = sc::floating_point_t(longitude_degrees * sc::D2R);
 	const auto sun_position = sc::compute_sun_position(date, latitude, longitude);
-	std::println("{:%Y-%m-%d %T}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}", to_time_point(date), latitude_degrees, longitude_degrees, sun_position.solarz * sc::R2D, sun_position.azi * sc::R2D);
+	std::println("{:%Y-%m-%d %T}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}", to_time_point(date), latitude_degrees, longitude_degrees, sun_position.zenithAngle * sc::R2D, sun_position.azimuthAngle * sc::R2D);
 }
 
 int main(int argc, char *argv[]) {

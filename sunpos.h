@@ -38,8 +38,8 @@ namespace sc {
 	[[nodiscard]] std::time_t get_date(int y, int m, int d, int hh = 0, int mm = 0, int ss = 0);
 
 	struct sun_position_t {
-		floating_point_t solarz;
-		floating_point_t azi;
+		floating_point_t zenithAngle;
+		floating_point_t azimuthAngle;
 	};
 	[[nodiscard]] sun_position_t compute_sun_position(std::time_t date, floating_point_t xlat, floating_point_t xlon);
 }
