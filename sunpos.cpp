@@ -68,20 +68,15 @@ sc::sun_position_t sc::compute_sun_position(std::time_t date, sc::floating_point
 	auto lambda = fmodulo_rad(L + 1.915_deg * std::sin(g) + 0.020_deg * std::sin(2 * g));
 	auto epsilon = 23.439_deg - 0.000'000'4_deg * n; // 23.43916666666666666666
 	auto alpha = std::atan2(std::cos(epsilon) * std::sin(lambda), std::cos(lambda));
-	auto delta = std::asin(std::sin(epsilon) * std::sin(lambda));
-	//auto R = 1.000'14 - 0.016'71 * std::cos(g) - 0.000'14 * std::cos(2 * g);
+	auto sunlat = std::asin(std::sin(epsilon) * std::sin(lambda));
 	auto EoT = fmodulo_rad(L - alpha);
+	//auto R = 1.000'14 - 0.016'71 * std::cos(g) - 0.000'14 * std::cos(2 * g);
 
 	// --- Solar geometry ---
-	auto sunlat = delta;
-	auto sunlon = -2 * std::numbers::pi_v<floating_point_t> * day_fraction(date) + std::numbers::pi_v<floating_point_t> - EoT;
-	auto PHIo =   xlat;
-	auto PHIs = sunlat;
-	auto LAMo =   xlon;
-	auto LAMS = sunlon;
-	auto Sx = std::cos(PHIs) * std::sin(LAMS - LAMo);
-	auto Sy = std::cos(PHIo) * std::sin(PHIs) - std::sin(PHIo) * std::cos(PHIs) * std::cos(LAMS - LAMo);
-	auto Sz = std::sin(PHIo) * std::sin(PHIs) + std::cos(PHIo) * std::cos(PHIs) * std::cos(LAMS - LAMo);
+	auto sunlon = std::numbers::pi_v<floating_point_t> * (-2 * day_fraction(date) + 1) - EoT;
+	auto Sx = std::cos(sunlat) * std::sin(sunlon - xlon);
+	auto Sy = std::cos(xlat) * std::sin(sunlat) - std::sin(xlat) * std::cos(sunlat) * std::cos(sunlon - xlon);
+	auto Sz = std::sin(xlat) * std::sin(sunlat) + std::cos(xlat) * std::cos(sunlat) * std::cos(sunlon - xlon);
 
 	return {
 		.zenithAngle = std::asin(Sz),
