@@ -17,7 +17,6 @@
  */
 
 #include "sunpos.h"
-
 #include <cmath>
 
 constexpr sc::floating_point_t operator ""_fp(long double d) {
@@ -38,7 +37,9 @@ static sc::floating_point_t day_fraction(std::time_t time) {
 }
 
 static constexpr sc::floating_point_t fmodulo_rad(sc::floating_point_t x) {
-	return x - std::floor(0.5_fp * std::numbers::inv_pi_v<sc::floating_point_t> * x) * 2 * std::numbers::pi_v<sc::floating_point_t>;
+	static constexpr auto INV_TWO_PI = 0.5_fp * std::numbers::inv_pi_v<sc::floating_point_t>;
+	static constexpr auto TWO_PI = 2 * std::numbers::pi_v<sc::floating_point_t>;
+	return x - std::floor(INV_TWO_PI * x) * TWO_PI;
 }
 
 std::time_t sc::get_date(int y, int m, int d, int hh, int mm, int ss) {
