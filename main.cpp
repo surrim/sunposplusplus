@@ -20,33 +20,26 @@
 #include <chrono>
 #include <expected>
 #include <print>
+#include <spanstream>
 #include <thread>
 #include <argparse/argparse.hpp>
 
 static constexpr auto DATE_FORMAT = "%Y-%m-%d %H:%M:%S";
 
-static std::chrono::sys_seconds to_time_point(std::time_t date) {
-	using namespace std::chrono;
-	return round<seconds>(system_clock::time_point(seconds(date)));
+static std::expected<std::chrono::sys_seconds, nullptr_t> read_date(std::string_view date_string, std::string_view date_format) {
+    auto stream = std::ispanstream(date_string);
+    auto timepoint = std::chrono::sys_seconds();
+    if (std::chrono::from_stream(stream, std::string(date_format).c_str(), timepoint)) {
+        return timepoint;
+    }
+    return std::unexpected(nullptr);
 }
 
-static std::expected<std::time_t, nullptr_t> read_date(std::string_view date_string, std::string_view date_format) {
-	auto tm = std::tm();
-	if (!strptime(date_string.data(), date_format.data(), &tm)) {
-		return std::unexpected(nullptr);
-	}
-#ifndef _WIN32
-	return timegm(&tm);
-#else
-	return _mkgmtime(&tm);
-#endif
-}
-
-void print_sun_position(std::time_t date, double latitude_degrees, double longitude_degrees) {
+void print_sun_position(std::chrono::sys_seconds date, double latitude_degrees, double longitude_degrees) {
 	const auto latitude  = sc::floating_point_t(latitude_degrees  * sc::D2R);
 	const auto longitude = sc::floating_point_t(longitude_degrees * sc::D2R);
 	const auto sun_position = sc::compute_sun_position(date, latitude, longitude);
-	std::println("{:%Y-%m-%d %T}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}", to_time_point(date), latitude_degrees, longitude_degrees, sun_position.zenithAngle * sc::R2D, sun_position.azimuthAngle * sc::R2D);
+	std::println("{:%Y-%m-%d %T}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}", date, latitude_degrees, longitude_degrees, sun_position.zenithAngle * sc::R2D, sun_position.azimuthAngle * sc::R2D);
 }
 
 int main(int argc, char *argv[]) {
@@ -71,12 +64,12 @@ int main(int argc, char *argv[]) {
 
 	if (track) {
 		while (true) {
-			const auto date = std::time(nullptr);
+			const auto date = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
 			print_sun_position(date, latitude_degrees, longitude_degrees);
-			std::this_thread::sleep_for(std::chrono::seconds(1));
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		}
 	} else {
-		const auto date = read_date(date_string, DATE_FORMAT).value_or(std::time(nullptr));
+		const auto date = read_date(date_string, DATE_FORMAT).value_or(std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now()));
 		print_sun_position(date, latitude_degrees, longitude_degrees);
 	}
 

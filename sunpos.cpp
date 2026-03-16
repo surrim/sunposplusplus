@@ -23,17 +23,22 @@ constexpr sc::floating_point_t operator ""_fp(long double d) {
 	return sc::floating_point_t(d);
 }
 
-static auto J2000 = sc::get_date(2000, 1, 1, 12); // 1 Jan 2000 12:00 UTC
+// 1 Jan 2000 12:00 UTC
+static constexpr auto J2000x = std::chrono::sys_days(std::chrono::year(2000) / 1 / 1) + std::chrono::hours(12);
 
-static sc::floating_point_t days_since_j2000(std::time_t date) {
-	return (date - J2000) * (1 / sc::floating_point_t(24 * 60 * 60));
+static sc::floating_point_t days_since_j2000(std::chrono::sys_seconds date) {
+    using namespace std::chrono;
+
+	return duration_cast<duration<sc::floating_point_t, std::ratio<24 * 60 * 60>>>(date - J2000x).count();
 }
 
-static sc::floating_point_t day_fraction(std::time_t time) {
-	auto tm = std::tm();
-	gmtime_r(&time, &tm);
-	auto ymd = sc::get_date(tm.tm_year + 1900 , tm.tm_mon + 1, tm.tm_mday);
-	return (time - ymd) * (1 / sc::floating_point_t(24 * 60 * 60));
+static constexpr sc::floating_point_t day_fraction(std::chrono::sys_seconds t) {
+    using namespace std::chrono;
+
+    auto timepoint = t;
+    auto startOfDay = sys_days(floor<days>(timepoint));
+    auto secs = duration_cast<seconds>(timepoint - startOfDay);
+    return secs.count() / sc::floating_point_t(24 * 60 * 60);
 }
 
 static constexpr sc::floating_point_t fmodulo_rad(sc::floating_point_t x) {
@@ -42,27 +47,23 @@ static constexpr sc::floating_point_t fmodulo_rad(sc::floating_point_t x) {
 	return x - std::floor(INV_TWO_PI * x) * TWO_PI;
 }
 
-std::time_t sc::get_date(int y, int m, int d, int hh, int mm, int ss) {
-	auto tm = std::tm{
-		.tm_sec  = ss,
-		.tm_min  = mm,
-		.tm_hour = hh,
-		.tm_mday = d,
-		.tm_mon  = m - 1,
-		.tm_year = y - 1900
-	};
-#ifndef _WIN32
-	return timegm(&tm);
-#else
-	return _mkgmtime(&tm);
-#endif
+std::chrono::sys_seconds sc::get_date(int y, int m, int d, int hh, int mm, int ss) {
+	using namespace std::chrono;
+
+    auto ymd = year(y) / month(m) / day(d);
+    return sys_days(ymd) + hours(hh) + minutes(mm) + seconds(ss);
+}
+
+sc::sun_position_t sc::compute_sun_position(std::chrono::sys_seconds date, floating_point_t xlat, floating_point_t xlon) {
+	auto n = days_since_j2000(date);
+	auto df = day_fraction(date);
+	return compute_sun_position(n, df, xlat, xlon);
 }
 
 // See https://en.wikipedia.org/wiki/Position_of_the_Sun#Approximate_position
 // and https://www.sciencedirect.com/science/article/pii/S0960148121004031
-sc::sun_position_t sc::compute_sun_position(std::time_t date, sc::floating_point_t xlat, sc::floating_point_t xlon) {
+sc::sun_position_t sc::compute_sun_position(floating_point_t n, floating_point_t df, floating_point_t xlat, floating_point_t xlon) {
 	// --- Astronomical Almanac for the Year 2019, Page C5 ---
-	auto n = days_since_j2000(date);
 	auto L = fmodulo_rad(280.460_deg + 0.985'647'4_deg * n);
 	auto g = fmodulo_rad(357.528_deg + 0.985'600'3_deg * n);
 	auto lambda = fmodulo_rad(L + 1.915_deg * std::sin(g) + 0.020_deg * std::sin(2 * g));
@@ -73,7 +74,7 @@ sc::sun_position_t sc::compute_sun_position(std::time_t date, sc::floating_point
 	//auto R = 1.000'14 - 0.016'71 * std::cos(g) - 0.000'14 * std::cos(2 * g);
 
 	// --- Solar geometry ---
-	auto sunlon = std::numbers::pi_v<floating_point_t> * (-2 * day_fraction(date) + 1) - EoT;
+	auto sunlon = std::numbers::pi_v<floating_point_t> * (-2 * df + 1) - EoT;
 	auto Sx = std::cos(sunlat) * std::sin(sunlon - xlon);
 	auto Sy = std::cos(xlat) * std::sin(sunlat) - std::sin(xlat) * std::cos(sunlat) * std::cos(sunlon - xlon);
 	auto Sz = std::sin(xlat) * std::sin(sunlat) + std::cos(xlat) * std::cos(sunlat) * std::cos(sunlon - xlon);

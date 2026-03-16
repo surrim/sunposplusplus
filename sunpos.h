@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <ctime>
+#include <chrono>
 #include <numbers>
 #include <stdfloat>
 
@@ -37,11 +37,13 @@ namespace sc {
 		return floating_point_t(d) * D2R;
 	}
 
-	[[nodiscard]] std::time_t get_date(int y, int m, int d, int hh = 0, int mm = 0, int ss = 0);
+	[[nodiscard]] std::chrono::sys_seconds get_date(int y, int m, int d, int hh = 0, int mm = 0, int ss = 0);
 
 	struct sun_position_t {
 		floating_point_t zenithAngle;
 		floating_point_t azimuthAngle;
 	};
-	[[nodiscard]] sun_position_t compute_sun_position(std::time_t date, floating_point_t xlat, floating_point_t xlon);
+
+	[[nodiscard]] sun_position_t compute_sun_position(std::chrono::sys_seconds date, floating_point_t xlat, floating_point_t xlon);
+	[[nodiscard]] sun_position_t compute_sun_position(floating_point_t n, floating_point_t df, floating_point_t xlat, floating_point_t xlon);
 }
