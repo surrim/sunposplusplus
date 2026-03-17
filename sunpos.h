@@ -45,5 +45,5 @@ namespace sc {
 	};
 
 	[[nodiscard]] sun_position_t compute_sun_position(std::chrono::sys_seconds date, floating_point_t xlat, floating_point_t xlon);
-	[[nodiscard]] sun_position_t compute_sun_position(floating_point_t n, floating_point_t df, floating_point_t xlat, floating_point_t xlon);
+	[[nodiscard]] sun_position_t compute_sun_position(floating_point_t daysSinceJ2000, floating_point_t xlat, floating_point_t xlon);
 }
