@@ -23,17 +23,18 @@ constexpr sc::floating_point_t operator ""_fp(long double d) {
 	return sc::floating_point_t(d);
 }
 
-// 1 Jan 2000 12:00 UTC
-static constexpr auto J2000 = std::chrono::sys_days(std::chrono::year(2000) / 1 / 1);
+static constexpr auto J2000 = std::chrono::sys_days(std::chrono::year(2000) / 1 / 1); // 1 Jan 2000 00:00 UTC
+static constexpr auto PI = std::numbers::pi_v<sc::floating_point_t>;
+static constexpr auto TWO_PI = 2 * PI;
+static constexpr auto INV_PI = std::numbers::inv_pi_v<sc::floating_point_t>;
+static constexpr auto INV_TWO_PI = 0.5_fp * INV_PI;
 
 static sc::floating_point_t days_since_j2000(std::chrono::sys_seconds date) {
-    using namespace std::chrono;
+	using namespace std::chrono;
 	return duration_cast<duration<sc::floating_point_t, std::ratio<24 * 60 * 60>>>(date - J2000).count();
 }
 
 static constexpr sc::floating_point_t fmodulo_rad(sc::floating_point_t x) {
-	static constexpr auto INV_TWO_PI = 0.5_fp * std::numbers::inv_pi_v<sc::floating_point_t>;
-	static constexpr auto TWO_PI = 2 * std::numbers::pi_v<sc::floating_point_t>;
 	return x - std::floor(INV_TWO_PI * x) * TWO_PI;
 }
 
@@ -51,26 +52,28 @@ sc::sun_position_t sc::compute_sun_position(std::chrono::sys_seconds date, float
 // See https://en.wikipedia.org/wiki/Position_of_the_Sun#Approximate_position
 // and https://www.sciencedirect.com/science/article/pii/S0960148121004031
 sc::sun_position_t sc::compute_sun_position(floating_point_t daysSinceJ2000, floating_point_t xlat, floating_point_t xlon) {
+	using std::sin, std::cos, std::asin, std::atan2;
+
 	// --- Astronomical Almanac for the Year 2019, Page C5 ---
 	auto n = daysSinceJ2000 - 0.5_fp;
 	auto L = fmodulo_rad(280.460_deg + 0.985'647'4_deg * n);
 	auto g = fmodulo_rad(357.528_deg + 0.985'600'3_deg * n);
-	auto lambda = fmodulo_rad(L + 1.915_deg * std::sin(g) + 0.020_deg * std::sin(2 * g));
+	auto lambda = fmodulo_rad(L + 1.915_deg * sin(g) + 0.020_deg * sin(2 * g));
 	auto epsilon = 23.439_deg - 0.000'000'4_deg * n; // 23.43916666666666666666
-	auto alpha = std::atan2(std::cos(epsilon) * std::sin(lambda), std::cos(lambda));
-	auto sunlat = std::asin(std::sin(epsilon) * std::sin(lambda));
+	auto alpha = atan2(cos(epsilon) * sin(lambda), cos(lambda));
+	auto sunlat = asin(sin(epsilon) * sin(lambda));
 	auto EoT = fmodulo_rad(L - alpha);
 	//auto R = 1.000'14 - 0.016'71 * std::cos(g) - 0.000'14 * std::cos(2 * g);
 
 	// --- Solar geometry ---
 	auto dayFraction = daysSinceJ2000 - std::round(daysSinceJ2000);
-	auto sunlon = std::numbers::pi_v<floating_point_t> * (1 - 2 * dayFraction) - EoT;
-	auto Sx = std::cos(sunlat) * std::sin(sunlon - xlon);
-	auto Sy = std::cos(xlat) * std::sin(sunlat) - std::sin(xlat) * std::cos(sunlat) * std::cos(sunlon - xlon);
-	auto Sz = std::sin(xlat) * std::sin(sunlat) + std::cos(xlat) * std::cos(sunlat) * std::cos(sunlon - xlon);
+	auto sunlon = PI * (1 - 2 * dayFraction) - EoT;
+	auto Sx = cos(sunlat) * sin(sunlon - xlon);
+	auto Sy = cos(xlat) * sin(sunlat) - sin(xlat) * cos(sunlat) * cos(sunlon - xlon);
+	auto Sz = sin(xlat) * sin(sunlat) + cos(xlat) * cos(sunlat) * cos(sunlon - xlon);
 
 	return {
-		.zenithAngle = std::asin(Sz),
-		.azimuthAngle = fmodulo_rad(std::atan2(Sx, Sy))
+		.zenithAngle = asin(Sz),
+		.azimuthAngle = fmodulo_rad(atan2(Sx, Sy))
 	};
 }
