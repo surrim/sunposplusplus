@@ -19,37 +19,37 @@
 #include "sunpos.h"
 #include <cmath>
 
-constexpr sc::floating_point_t operator ""_fp(long double d) {
-	return sc::floating_point_t(d);
+constexpr sp::floating_point_t operator ""_fp(long double d) {
+	return sp::floating_point_t(d);
 }
 
 static constexpr auto J2000 = std::chrono::sys_days(std::chrono::year(2000) / 1 / 1); // 1 Jan 2000 00:00 UTC
 
-static sc::floating_point_t days_since_j2000(std::chrono::sys_seconds date) {
+static sp::floating_point_t days_since_j2000(std::chrono::sys_seconds date) {
 	using namespace std::chrono;
-	return duration_cast<duration<sc::floating_point_t, std::ratio<24 * 60 * 60>>>(date - J2000).count();
+	return duration_cast<duration<sp::floating_point_t, std::ratio<24 * 60 * 60>>>(date - J2000).count();
 }
 
-static constexpr sc::floating_point_t fmodulo_rad(sc::floating_point_t x) {
-	static constexpr auto INV_PI = std::numbers::inv_pi_v<sc::floating_point_t>;
+static constexpr sp::floating_point_t fmodulo_rad(sp::floating_point_t x) {
+	static constexpr auto INV_PI = std::numbers::inv_pi_v<sp::floating_point_t>;
 	static constexpr auto INV_TWO_PI = 0.5_fp * INV_PI;
-	return x - std::floor(INV_TWO_PI * x) * sc::TWO_PI;
+	return x - std::floor(INV_TWO_PI * x) * sp::TWO_PI;
 }
 
-std::chrono::sys_seconds sc::get_date(int y, int m, int d, int hh, int mm, int ss) {
+std::chrono::sys_seconds sp::get_date(int y, int m, int d, int hh, int mm, int ss) {
 	using namespace std::chrono;
 	auto ymd = year(y) / month(m) / day(d);
 	return sys_days(ymd) + hours(hh) + minutes(mm) + seconds(ss);
 }
 
-sc::sun_position_t sc::compute_sun_position(std::chrono::sys_seconds date, floating_point_t latitude, floating_point_t longitude) {
+sp::sun_position_t sp::compute_sun_position(std::chrono::sys_seconds date, floating_point_t latitude, floating_point_t longitude) {
 	auto daysSinceJ2000 = days_since_j2000(date);
 	return compute_sun_position(daysSinceJ2000, latitude, longitude);
 }
 
 // See https://en.wikipedia.org/wiki/Position_of_the_Sun#Approximate_position
 // and https://www.sciencedirect.com/science/article/pii/S0960148121004031
-sc::sun_position_t sc::compute_sun_position(floating_point_t daysSinceJ2000, floating_point_t latitude, floating_point_t longitude) {
+sp::sun_position_t sp::compute_sun_position(floating_point_t daysSinceJ2000, floating_point_t latitude, floating_point_t longitude) {
 	using std::sin, std::cos, std::asin, std::atan2, std::round;
 
 	// --- Astronomical Almanac for the Year 2019, Page C5 ---

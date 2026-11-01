@@ -36,10 +36,12 @@ static std::expected<std::chrono::sys_seconds, nullptr_t> read_date(std::string_
 }
 
 void print_sun_position(std::chrono::sys_seconds date, double latitude_degrees, double longitude_degrees) {
-	const auto latitude  = sc::floating_point_t(latitude_degrees  * sc::D2R);
-	const auto longitude = sc::floating_point_t(longitude_degrees * sc::D2R);
-	const auto sun_position = sc::compute_sun_position(date, latitude, longitude);
-	std::println("{:%Y-%m-%d %T}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}", date, latitude_degrees, longitude_degrees, sun_position.zenithAngle * sc::R2D, sun_position.azimuthAngle * sc::R2D);
+	auto latitude  = sp::floating_point_t(latitude_degrees  * sp::D2R);
+	auto longitude = sp::floating_point_t(longitude_degrees * sp::D2R);
+	auto sunPosition = sp::compute_sun_position(date, latitude, longitude);
+	auto zenithAngleDegrees = sunPosition.zenithAngle * sp::R2D;
+	auto azimuthAngleDegrees = sunPosition.azimuthAngle * sp::R2D;
+	std::println("{:%Y-%m-%d %T}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}", date, latitude_degrees, longitude_degrees, zenithAngleDegrees, azimuthAngleDegrees);
 }
 
 int main(int argc, char *argv[]) {

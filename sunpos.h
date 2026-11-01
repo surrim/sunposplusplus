@@ -26,10 +26,10 @@
 #define SP_FLOATING_POINT_TYPE std::float32_t
 #endif
 
-namespace sc {
+namespace sp {
 	using floating_point_t = SP_FLOATING_POINT_TYPE;
-	static constexpr auto PI = std::numbers::pi_v<sc::floating_point_t>;
-	static constexpr auto TWO_PI = 2 * sc::PI;
+	static constexpr auto PI = std::numbers::pi_v<floating_point_t>;
+	static constexpr auto TWO_PI = 2 * PI;
 	static constexpr floating_point_t R2D = 360 / TWO_PI;
 	static constexpr floating_point_t D2R = TWO_PI / 360;
 	static constexpr floating_point_t R2B = 256 / TWO_PI;
