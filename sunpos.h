@@ -28,10 +28,12 @@
 
 namespace sc {
 	using floating_point_t = SP_FLOATING_POINT_TYPE;
-	static constexpr floating_point_t R2D = 180 / std::numbers::pi_v<floating_point_t>;
-	static constexpr floating_point_t D2R = std::numbers::pi_v<floating_point_t> / 180;
-	static constexpr floating_point_t R2B = 128 / std::numbers::pi_v<floating_point_t>;
-	static constexpr floating_point_t B2R = std::numbers::pi_v<floating_point_t> / 128;
+	static constexpr auto PI = std::numbers::pi_v<sc::floating_point_t>;
+	static constexpr auto TWO_PI = 2 * sc::PI;
+	static constexpr floating_point_t R2D = 360 / TWO_PI;
+	static constexpr floating_point_t D2R = TWO_PI / 360;
+	static constexpr floating_point_t R2B = 256 / TWO_PI;
+	static constexpr floating_point_t B2R = TWO_PI / 256;
 
 	constexpr floating_point_t operator ""_deg(long double d) {
 		return floating_point_t(d) * D2R;
@@ -44,6 +46,6 @@ namespace sc {
 		floating_point_t azimuthAngle;
 	};
 
-	[[nodiscard]] sun_position_t compute_sun_position(std::chrono::sys_seconds date, floating_point_t xlat, floating_point_t xlon);
-	[[nodiscard]] sun_position_t compute_sun_position(floating_point_t daysSinceJ2000, floating_point_t xlat, floating_point_t xlon);
+	[[nodiscard]] sun_position_t compute_sun_position(std::chrono::sys_seconds date, floating_point_t latitude, floating_point_t longitude);
+	[[nodiscard]] sun_position_t compute_sun_position(floating_point_t daysSinceJ2000, floating_point_t latitude, floating_point_t longitude);
 }
