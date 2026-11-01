@@ -17,11 +17,6 @@
  */
 
 #include "sunpos.h"
-#include <cmath>
-
-constexpr sp::floating_point_t operator ""_fp(long double d) {
-	return sp::floating_point_t(d);
-}
 
 static constexpr auto J2000 = std::chrono::sys_days(std::chrono::year(2000) / 1 / 1); // 1 Jan 2000 00:00 UTC
 
@@ -32,7 +27,7 @@ static sp::floating_point_t days_since_j2000(std::chrono::sys_seconds date) {
 
 static constexpr sp::floating_point_t fmodulo_rad(sp::floating_point_t x) {
 	static constexpr auto INV_PI = std::numbers::inv_pi_v<sp::floating_point_t>;
-	static constexpr auto INV_TWO_PI = 0.5_fp * INV_PI;
+	static constexpr auto INV_TWO_PI = sp::floating_point_t(0.5) * INV_PI;
 	return x - std::floor(INV_TWO_PI * x) * sp::TWO_PI;
 }
 
@@ -53,11 +48,11 @@ sp::sun_position_t sp::compute_sun_position(floating_point_t daysSinceJ2000, flo
 	using std::sin, std::cos, std::asin, std::atan2, std::round;
 
 	// --- Astronomical Almanac for the Year 2019, Page C5 ---
-	auto n = daysSinceJ2000 - 0.5_fp;
-	auto L = fmodulo_rad(280.460_deg + 0.985'647'4_deg * n);
-	auto g = fmodulo_rad(357.528_deg + 0.985'600'3_deg * n);
-	auto lambda = fmodulo_rad(L + 1.915_deg * sin(g) + 0.020_deg * sin(2 * g));
-	auto epsilon = 23.439_deg - 0.000'000'4_deg * n; // 23.43916666666666666666
+	auto n = daysSinceJ2000 - floating_point_t(0.5);
+	auto L = fmodulo_rad(from360(280.460f128) + from360(0.985'647'4f128) * n);
+	auto g = fmodulo_rad(from360(357.528f128) + from360(0.985'600'3f128) * n);
+	auto lambda = fmodulo_rad(L + from360(1.915f128) * sin(g) + from360(0.020f128) * sin(2 * g));
+	auto epsilon = from360(23.439f128) - from360(0.000'000'4f128) * n; // 23.43916666666666666666
 	auto alpha = atan2(cos(epsilon) * sin(lambda), cos(lambda));
 	auto sunLatitude = asin(sin(epsilon) * sin(lambda));
 	auto EoT = fmodulo_rad(L - alpha);

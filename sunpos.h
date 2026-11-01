@@ -19,6 +19,7 @@
 #pragma once
 
 #include <chrono>
+#include <cmath>
 #include <numbers>
 #include <stdfloat>
 
@@ -30,13 +31,23 @@ namespace sp {
 	using floating_point_t = SP_FLOATING_POINT_TYPE;
 	static constexpr auto PI = std::numbers::pi_v<floating_point_t>;
 	static constexpr auto TWO_PI = 2 * PI;
-	static constexpr floating_point_t R2D = 360 / TWO_PI;
-	static constexpr floating_point_t D2R = TWO_PI / 360;
-	static constexpr floating_point_t R2B = 256 / TWO_PI;
-	static constexpr floating_point_t B2R = TWO_PI / 256;
 
-	constexpr floating_point_t operator ""_deg(long double d) {
-		return floating_point_t(d) * D2R;
+	template<typename T = floating_point_t>
+	[[nodiscard]] static constexpr inline T to360(floating_point_t r) {
+		return T(360 / TWO_PI * r);
+	}
+
+	[[nodiscard]] static constexpr inline floating_point_t from360(auto d) {
+		return floating_point_t(TWO_PI / 360 * d);
+	}
+
+	template<typename T = uint8_t>
+	[[nodiscard]] static constexpr inline T to256(floating_point_t r) {
+		return T(std::round(256 / TWO_PI * r));
+	}
+
+	[[nodiscard]] static constexpr inline floating_point_t from256(auto b) {
+		return floating_point_t(TWO_PI / 256 * b);
 	}
 
 	[[nodiscard]] std::chrono::sys_seconds get_date(int y, int m, int d, int hh = 0, int mm = 0, int ss = 0);

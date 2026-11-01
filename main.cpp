@@ -26,7 +26,7 @@
 
 static constexpr auto DATE_FORMAT = "%Y-%m-%d %H:%M:%S";
 
-static std::expected<std::chrono::sys_seconds, nullptr_t> read_date(std::string_view date_string, std::string_view date_format) {
+static std::expected<std::chrono::sys_seconds, nullptr_t> readDate(std::string_view date_string, std::string_view date_format) {
     auto stream = std::ispanstream(date_string);
     auto timepoint = std::chrono::sys_seconds();
     if (std::chrono::from_stream(stream, std::string(date_format).c_str(), timepoint)) {
@@ -35,24 +35,24 @@ static std::expected<std::chrono::sys_seconds, nullptr_t> read_date(std::string_
     return std::unexpected(nullptr);
 }
 
-void print_sun_position(std::chrono::sys_seconds date, double latitude_degrees, double longitude_degrees) {
-	auto latitude  = sp::floating_point_t(latitude_degrees  * sp::D2R);
-	auto longitude = sp::floating_point_t(longitude_degrees * sp::D2R);
+void printSunPosition(std::chrono::sys_seconds date, auto latitude360, auto longitude360) {
+	auto latitude  = sp::from360(latitude360);
+	auto longitude = sp::from360(longitude360);
 	auto sunPosition = sp::compute_sun_position(date, latitude, longitude);
-	auto zenithAngleDegrees = sunPosition.zenithAngle * sp::R2D;
-	auto azimuthAngleDegrees = sunPosition.azimuthAngle * sp::R2D;
-	std::println("{:%Y-%m-%d %T}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}", date, latitude_degrees, longitude_degrees, zenithAngleDegrees, azimuthAngleDegrees);
+	auto zenithAngle360 = sp::to360(sunPosition.zenithAngle);
+	auto azimuthAngle360 = sp::to360(sunPosition.azimuthAngle);
+	std::println("{:%Y-%m-%d %T}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}", date, latitude360, longitude360, zenithAngle360, azimuthAngle360);
 }
 
 int main(int argc, char *argv[]) {
 	argparse::ArgumentParser program("sunpos");
 	program.add_description("Calculate the position of the sun");
-	auto latitude_degrees  = 0.0;
-	auto longitude_degrees = 0.0;
+	auto latitude360  = 0.0;
+	auto longitude360 = 0.0;
 	auto date_string = std::string();
 	auto track = false;
-	program.add_argument("latitude").help("our latitude").store_into(latitude_degrees);
-	program.add_argument("longitude").help("our longitude").store_into(longitude_degrees);
+	program.add_argument("latitude").help("our latitude").store_into(latitude360);
+	program.add_argument("longitude").help("our longitude").store_into(longitude360);
 	program.add_argument("-d", "--date").help("specify the UTC date as \"YYYY-MM-DD HH:MM:SS\"").metavar("DATE").store_into(date_string);
 	program.add_argument("-t", "--track").help("track the current time").flag().store_into(track);
 
@@ -66,13 +66,13 @@ int main(int argc, char *argv[]) {
 
 	if (track) {
 		while (true) {
-			const auto date = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
-			print_sun_position(date, latitude_degrees, longitude_degrees);
+			auto date = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
+			printSunPosition(date, latitude360, longitude360);
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		}
 	} else {
-		const auto date = read_date(date_string, DATE_FORMAT).value_or(std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now()));
-		print_sun_position(date, latitude_degrees, longitude_degrees);
+		auto date = readDate(date_string, DATE_FORMAT).value_or(std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now()));
+		printSunPosition(date, latitude360, longitude360);
 	}
 
 	return 0;
