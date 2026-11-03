@@ -25,7 +25,7 @@
 
 static constexpr auto DATE_FORMAT = "%Y-%m-%d %H:%M:%S";
 
-static std::expected<std::chrono::sys_seconds, nullptr_t> readDate(std::string_view dateString, std::string_view dateFormat) {
+static std::expected<std::chrono::sys_seconds, std::nullptr_t> readDate(std::string_view dateString, std::string_view dateFormat) {
     auto stream = std::ispanstream(dateString);
     auto timepoint = std::chrono::sys_seconds();
     if (std::chrono::from_stream(stream, dateFormat.data(), timepoint)) {
@@ -42,6 +42,10 @@ static void printSunPosition(std::chrono::sys_seconds date, auto latitude360, au
 	auto zenithAngle360 = sp::to360(sunPosition.zenithAngle);
 	auto azimuthAngle360 = sp::to360(sunPosition.azimuthAngle);
 	std::println("{:%Y-%m-%d %T}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}", date, latitude360, longitude360, zenithAngle360, azimuthAngle360);
+}
+
+static std::chrono::sys_seconds now() {
+	return std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
 }
 
 int main(int argc, char *argv[]) {
@@ -66,12 +70,12 @@ int main(int argc, char *argv[]) {
 
 	if (track) {
 		while (true) {
-			auto date = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
+			auto date = now();
 			printSunPosition(date, latitude360, longitude360);
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		}
 	} else {
-		auto date = readDate(dateString, DATE_FORMAT).value_or(std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now()));
+		auto date = readDate(dateString, DATE_FORMAT).value_or(now());
 		printSunPosition(date, latitude360, longitude360);
 	}
 
