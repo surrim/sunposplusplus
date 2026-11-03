@@ -87,7 +87,7 @@ sp::sun_position_t sp::compute_sun_position(floating_point_t daysAfterY2K, float
 	auto Sz = sin(latitude) * sin(sunLatitude) + cos(latitude) * cos(sunLatitude) * cos(sunLongitude - longitude);
 
 	return {
-		.zenithAngle = asin(Sz),
+		.altitudeAngle = asin(Sz),
 		.azimuthAngle = fmodulo_rad(atan2(Sx, Sy))
 	};
 }

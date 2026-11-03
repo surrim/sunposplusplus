@@ -40,9 +40,9 @@ static void printSunPosition(std::chrono::sys_seconds date, sp::floating_point_t
 	auto longitude = sp::from360(longitude360);
 	auto daysAfterY2K = sp::date2DaysAfterY2K(date);
 	auto sunPosition = sp::compute_sun_position(daysAfterY2K, latitude, longitude);
-	auto zenithAngle360 = sp::to360(sunPosition.zenithAngle);
+	auto altitudeAngle360 = sp::to360(sunPosition.altitudeAngle);
 	auto azimuthAngle360 = sp::to360(sunPosition.azimuthAngle);
-	std::println("{0:%Y-%m-%d %T}\t{1: {5}.{6}f}\t{2: {5}.{6}f}\t{3: {5}.{6}f}\t{4:{5}.{6}f}", date, latitude360, longitude360, zenithAngle360, azimuthAngle360, MAX_DIGITS, MAX_DIGITS - 4);
+	std::println("{0:%Y-%m-%d %T}\t{1: {5}.{6}f}\t{2: {5}.{6}f}\t{3: {5}.{6}f}\t{4:{5}.{6}f}", date, latitude360, longitude360, altitudeAngle360, azimuthAngle360, MAX_DIGITS, MAX_DIGITS - 4);
 }
 
 static std::chrono::sys_seconds now() {
@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 	auto latitude360  = floatFromString<sp::floating_point_t>(latitude360String).value_or(0);
 	auto longitude360 = floatFromString<sp::floating_point_t>(longitude360String).value_or(0);
 	if (header) {
-		std::println("{0:19}\t{1:{5}}\t{2:{5}}\t{3:{5}}\t{4:{5}}", "UTC Date", "Latitude", "Longitude", "Zenith", "Azimuth", MAX_DIGITS);
+		std::println("{0:19}\t{1:{5}}\t{2:{5}}\t{3:{5}}\t{4:{5}}", "UTC Date", "Latitude", "Longitude", "Altitude", "Azimuth", MAX_DIGITS);
 	}
 	if (track) {
 		while (true) {

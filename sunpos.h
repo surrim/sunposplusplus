@@ -57,7 +57,7 @@ namespace sp {
 	[[nodiscard]] floating_point_t date2DaysAfterY2K(std::chrono::sys_seconds date);
 
 	struct sun_position_t {
-		floating_point_t zenithAngle;
+		floating_point_t altitudeAngle;
 		floating_point_t azimuthAngle;
 	};
 
