@@ -24,6 +24,7 @@
 #include <argparse/argparse.hpp>
 
 static constexpr auto DATE_FORMAT = "%Y-%m-%d %H:%M:%S";
+static constexpr auto MAX_DIGITS = std::numeric_limits<sp::floating_point_t>::max_digits10;
 
 static std::expected<std::chrono::sys_seconds, std::nullptr_t> readDate(std::string_view dateString, std::string_view dateFormat) {
     auto stream = std::ispanstream(dateString);
@@ -34,30 +35,41 @@ static std::expected<std::chrono::sys_seconds, std::nullptr_t> readDate(std::str
     return std::unexpected(nullptr);
 }
 
-static void printSunPosition(std::chrono::sys_seconds date, auto latitude360, auto longitude360) {
+static void printSunPosition(std::chrono::sys_seconds date, sp::floating_point_t latitude360, sp::floating_point_t longitude360) {
 	auto latitude  = sp::from360(latitude360);
 	auto longitude = sp::from360(longitude360);
 	auto daysAfterY2K = sp::date2DaysAfterY2K(date);
 	auto sunPosition = sp::compute_sun_position(daysAfterY2K, latitude, longitude);
 	auto zenithAngle360 = sp::to360(sunPosition.zenithAngle);
 	auto azimuthAngle360 = sp::to360(sunPosition.azimuthAngle);
-	std::println("{:%Y-%m-%d %T}\t{:.6f}\t{:.6f}\t{:.6f}\t{:.6f}", date, latitude360, longitude360, zenithAngle360, azimuthAngle360);
+	std::println("{0:%Y-%m-%d %T}\t{1: {5}.{6}f}\t{2: {5}.{6}f}\t{3: {5}.{6}f}\t{4:{5}.{6}f}", date, latitude360, longitude360, zenithAngle360, azimuthAngle360, MAX_DIGITS, MAX_DIGITS - 4);
 }
 
 static std::chrono::sys_seconds now() {
 	return std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
 }
 
+template<typename T> static std::expected<T, std::nullptr_t> floatFromString(std::string_view string) {
+	auto f = T();
+	auto [ptr, ec] = std::from_chars(string.data(), string.data() + string.size(), f);
+	if (ec != std::errc()) {
+	    return std::unexpected(nullptr);
+	}
+	return f;
+}
+
 int main(int argc, char *argv[]) {
 	argparse::ArgumentParser program("sunpos");
 	program.add_description("Calculate the position of the sun");
-	auto latitude360  = 0.0;
-	auto longitude360 = 0.0;
+	auto latitude360String = std::string();
+	auto longitude360String = std::string();
 	auto dateString = std::string();
+	auto header = false;
 	auto track = false;
-	program.add_argument("latitude").help("our latitude").store_into(latitude360);
-	program.add_argument("longitude").help("our longitude").store_into(longitude360);
+	program.add_argument("latitude").help("our latitude").store_into(latitude360String);
+	program.add_argument("longitude").help("our longitude").store_into(longitude360String);
 	program.add_argument("-d", "--date").help("specify the UTC date as \"YYYY-MM-DD HH:MM:SS\"").metavar("DATE").store_into(dateString);
+	program.add_argument("-h", "--header").help("display table header").flag().store_into(header);
 	program.add_argument("-t", "--track").help("track the current time").flag().store_into(track);
 
 	try {
@@ -68,6 +80,11 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	auto latitude360  = floatFromString<sp::floating_point_t>(latitude360String).value_or(0);
+	auto longitude360 = floatFromString<sp::floating_point_t>(longitude360String).value_or(0);
+	if (header) {
+		std::println("{0:19}\t{1:{5}}\t{2:{5}}\t{3:{5}}\t{4:{5}}", "UTC Date", "Latitude", "Longitude", "Zenith", "Azimuth", MAX_DIGITS);
+	}
 	if (track) {
 		while (true) {
 			auto date = now();
