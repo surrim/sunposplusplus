@@ -20,6 +20,7 @@
 
 #include <chrono>
 #include <cmath>
+#include <cstdint>
 #include <numbers>
 #include <stdfloat>
 
@@ -50,13 +51,15 @@ namespace sp {
 		return floating_point_t(TWO_PI / 256 * b);
 	}
 
-	[[nodiscard]] std::chrono::sys_seconds get_date(int y, int m, int d, int hh = 0, int mm = 0, int ss = 0);
+	[[nodiscard]] int32_t date2DaysAfterY2K(int16_t year, uint8_t month, uint8_t day);
+	[[nodiscard]] floating_point_t date2DaysAfterY2K(int16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute = 0, uint8_t second = 0);
+	[[nodiscard]] floating_point_t date2DaysAfterY2K(uint32_t unixTime);
+	[[nodiscard]] floating_point_t date2DaysAfterY2K(std::chrono::sys_seconds date);
 
 	struct sun_position_t {
 		floating_point_t zenithAngle;
 		floating_point_t azimuthAngle;
 	};
 
-	[[nodiscard]] sun_position_t compute_sun_position(std::chrono::sys_seconds date, floating_point_t latitude, floating_point_t longitude);
-	[[nodiscard]] sun_position_t compute_sun_position(floating_point_t daysSinceJ2000, floating_point_t latitude, floating_point_t longitude);
+	[[nodiscard]] sun_position_t compute_sun_position(floating_point_t daysAfterY2K, floating_point_t latitude, floating_point_t longitude);
 }
